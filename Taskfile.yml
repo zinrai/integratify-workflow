@@ -1,0 +1,37 @@
+version: '3'
+
+vars:
+  CONSUL_ADDR: 127.0.0.1:8500
+  OUTPUT_DIR: ./output
+  OUTPUT_FILE: raft-configuration.json
+
+tasks:
+  fetch-raft-config:
+    desc: Fetch Consul Raft configuration and save as pretty-printed JSON
+    cmds:
+      - mkdir -p {{.OUTPUT_DIR}}
+      - curl -s {{.CONSUL_ADDR}}/v1/operator/raft/configuration | jq '.' > {{.OUTPUT_DIR}}/{{.OUTPUT_FILE}}
+      - echo "Saved to {{.OUTPUT_DIR}}/{{.OUTPUT_FILE}}"
+    preconditions:
+      - sh: command -v jq
+        msg: "jq is not installed. Please install jq first."
+
+  validate-raft-config:
+    desc: Validate the fetched Raft configuration with integratify
+    deps: [fetch-raft-config]
+    cmds:
+      - integratify -schema=raft-configuration.cue -config={{.OUTPUT_DIR}}/{{.OUTPUT_FILE}}
+    preconditions:
+      - sh: command -v integratify
+        msg: "integratify is not installed. Install with: go install github.com/zinrai/integratify@latest"
+
+  clean:
+    desc: Remove generated output files
+    cmds:
+      - rm -rf {{.OUTPUT_DIR}}
+      - echo "Cleaned {{.OUTPUT_DIR}}"
+
+  default:
+    desc: Default task - fetch and validate Raft configuration
+    cmds:
+      - task: validate-raft-config

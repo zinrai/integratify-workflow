@@ -1,0 +1,138 @@
+# https://hub.docker.com/_/consul
+services:
+  consul-server-1:
+    image: consul:1.15.4
+    container_name: consul-server-1
+    hostname: consul-server-1
+    networks:
+      - consul-network
+    ports:
+      - "8500:8500"  # HTTP API & UI
+      - "8600:8600/udp"  # DNS
+    volumes:
+      - consul-data-1:/consul/data
+    command: >
+      agent -server
+      -bootstrap-expect=5
+      -node=consul-server-1
+      -client=0.0.0.0
+      -ui
+      -retry-join=consul-server-2
+      -retry-join=consul-server-3
+      -retry-join=consul-server-4
+      -retry-join=consul-server-5
+      -datacenter=dc1
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+    restart: unless-stopped
+
+  consul-server-2:
+    image: consul:1.15.4
+    container_name: consul-server-2
+    hostname: consul-server-2
+    networks:
+      - consul-network
+    ports:
+      - "8501:8500"
+    volumes:
+      - consul-data-2:/consul/data
+    command: >
+      agent -server
+      -bootstrap-expect=5
+      -node=consul-server-2
+      -client=0.0.0.0
+      -ui
+      -retry-join=consul-server-1
+      -retry-join=consul-server-3
+      -retry-join=consul-server-4
+      -retry-join=consul-server-5
+      -datacenter=dc1
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+    restart: unless-stopped
+
+  consul-server-3:
+    image: consul:1.15.4
+    container_name: consul-server-3
+    hostname: consul-server-3
+    networks:
+      - consul-network
+    ports:
+      - "8502:8500"
+    volumes:
+      - consul-data-3:/consul/data
+    command: >
+      agent -server
+      -bootstrap-expect=5
+      -node=consul-server-3
+      -client=0.0.0.0
+      -ui
+      -retry-join=consul-server-1
+      -retry-join=consul-server-2
+      -retry-join=consul-server-4
+      -retry-join=consul-server-5
+      -datacenter=dc1
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+    restart: unless-stopped
+
+  consul-server-4:
+    image: consul:1.15.4
+    container_name: consul-server-4
+    hostname: consul-server-4
+    networks:
+      - consul-network
+    ports:
+      - "8503:8500"
+    volumes:
+      - consul-data-4:/consul/data
+    command: >
+      agent -server
+      -bootstrap-expect=5
+      -node=consul-server-4
+      -client=0.0.0.0
+      -ui
+      -retry-join=consul-server-1
+      -retry-join=consul-server-2
+      -retry-join=consul-server-3
+      -retry-join=consul-server-5
+      -datacenter=dc1
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+    restart: unless-stopped
+
+  consul-server-5:
+    image: consul:1.15.4
+    container_name: consul-server-5
+    hostname: consul-server-5
+    networks:
+      - consul-network
+    ports:
+      - "8504:8500"
+    volumes:
+      - consul-data-5:/consul/data
+    command: >
+      agent -server
+      -bootstrap-expect=5
+      -node=consul-server-5
+      -client=0.0.0.0
+      -ui
+      -retry-join=consul-server-1
+      -retry-join=consul-server-2
+      -retry-join=consul-server-3
+      -retry-join=consul-server-4
+      -datacenter=dc1
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+    restart: unless-stopped
+
+networks:
+  consul-network:
+    driver: bridge
+
+volumes:
+  consul-data-1:
+  consul-data-2:
+  consul-data-3:
+  consul-data-4:
+  consul-data-5:
